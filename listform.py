@@ -90,7 +90,7 @@ class Leaderboard:
         self.lock = 0
 
 
-    def add(self, obj, ignore_exists=False):
+    def insert(self, obj, ignore_exists=False):
         if not isinstance(obj, User):
             raise Exception("uh oh")
 
@@ -192,7 +192,7 @@ class Leaderboard:
 
         del self.board[index]
         user.score = new_score
-        self.add(user, ignore_exists=True)
+        self.insert(user, ignore_exists=True)
         
 
 if __name__ == "__main__":
