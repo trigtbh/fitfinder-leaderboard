@@ -10,39 +10,41 @@ app = flask.Flask(__name__)
 from flask import request
 
 
-import redis, pickle, sys
+# import redis, pickle, sys
 
-redis_client = redis.Redis(host="127.0.0.1", port=6379, db=0)
+# redis_client = redis.Redis(host="127.0.0.1", port=6379, db=0)
 
-def get_shared_object():
-    obj_data = redis_client.get("leaderboard")
-    if obj_data:
-        return pickle.loads(obj_data)
-    return None
+# def get_shared_object():
+#     obj_data = redis_client.get("leaderboard")
+#     if obj_data:
+#         return pickle.loads(obj_data)
+#     return None
 
-def set_shared_object(obj):
-    redis_client.set("leaderboard", pickle.dumps(obj))
+# def set_shared_object(obj):
+#     redis_client.set("leaderboard", pickle.dumps(obj))
 
-lb: Leaderboard = get_shared_object()
-if not lb or (len(sys.argv) > 1 and sys.argv[1] == "reset"):
-    print("resetting leaderboard")
-    lb = Leaderboard()
-    set_shared_object(lb)
+# lb: Leaderboard = get_shared_object()
+# if not lb or (len(sys.argv) > 1 and sys.argv[1] == "reset"):
+#     print("resetting leaderboard")
+#     lb = Leaderboard()
+#     set_shared_object(lb)
 
-del lb
+# del lb
+
+
+
 
 @app.route("/register_bypass", methods=["POST"])
 def register_bypass():
     data = request.json
-    lb = get_shared_object()
-    lb.insert(User(data["uuid"], 0))
+    lb.insert(data["uuid"])
     set_shared_object(lb)
     return "OK"
 
 @app.route("/update", methods=["POST"])
 def update():
     data = request.json
-    lb = get_shared_object()
+    
     lb.update(data["uuid"], data["score"])
     set_shared_object(lb)
     return "OK"
@@ -50,26 +52,25 @@ def update():
 @app.route("/score", methods=["POST"])
 def score():
     data = request.json
-    lb = get_shared_object()
-    return str(lb.get(data["uuid"]).score)
+    
+    return str(lb.get(data["uuid"]))
 
 @app.route("/adjacent", methods=["POST"])
 def adjacent():
     data = request.json
-    lb = get_shared_object()
+    
     return str(lb.adjacent(data["uuid"]))
 
 @app.route("/top_ten", methods=["GET"])
 def top_ten():
-    lb = get_shared_object()
+    
     return str(lb.top_ten())
 
 @app.route("/increment", methods=["POST"])
 def increment():
     data = request.json
-    lb = get_shared_object()
-    user = lb.get(data["uuid"])
-    score = user.score + data["increment"]
+    
+    score = lb.get(data["uuid"]) + data["increment"]
     lb.update(data["uuid"], score)
     set_shared_object(lb)
     return "OK"
@@ -78,7 +79,7 @@ def increment():
 @app.route("/placement", methods=["POST"])
 def placement():
     data = request.json
-    lb = get_shared_object()
+    
     return str(lb.placement(data["uuid"]))
 
 @app.route("/", methods=["GET"])
