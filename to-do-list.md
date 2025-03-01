@@ -8,20 +8,20 @@
 
 ~~post_picture~~ (need to connect to s3)
 
-upload_profile_pic
+~~upload_profile_pic~~ (connect to s3)
 
-change_tags
+~~change_tags~~
 
-follow_user
+~~follow_user~~
 
-unfollow_user
+~~unfollow_user~~
 
-view_followers
+~~view_followers~~
 
-view_following
+~~view_following~~
 
-search_user
+search_user: delegated to akshai
 
-view_user
+~~view_user~~
 
-view_new_post
+~~view_new_post~~

@@ -190,7 +190,8 @@ def comment():
 
     try:
         cursor.execute(insert_query, (comment_id, requests.json["comment"], id_, datetime.datetime.now()))
-
+    except Exception as e:
+        return error(e)
 
 
     update_query = f"""
@@ -203,3 +204,50 @@ def comment():
         return success()
     except Exception as e:
         return error(e)
+
+viewed = {}
+
+@app.route("/api/posts/next")
+def nextpost():
+    if not verify({
+        "token": str
+    }, request.json):
+        return invalid_fields()
+
+    token = request.json["token"]
+    if not is_valid_token(token):
+        return forbidden()
+
+    id_ = get_user_id(token)
+
+    if id_ not in viewed:
+        viewed[id_] = set()
+
+    
+    id_ = get_user_id(token)
+    query = f"""
+        SELECT post_id
+        FROM "{config.META_NAME}"."PostInfo"
+    """
+    
+    try:
+        cursor.execute(query, (user_id,))
+        result = cursor.fetchone()
+        data = result[0] if result else []
+    except Exception as e:
+        return error(e)
+
+    data = set(data)
+
+    valid = data - viewed[id_]
+
+    if len(valid) == 0:
+        return error("no new posts")
+
+    new = valid.pop()
+
+    viewed[id_].add(new)
+
+    return success({"data": new})
+
+

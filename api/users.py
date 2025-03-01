@@ -71,3 +71,217 @@ def username_available():
         return Response(dumps(data), status=200, mimetype="application/json")
     except Exception as e:
         return error(e)
+
+
+
+@app.route("/api/users/follow")
+def follow():
+    if not verify({
+        "token": str,
+        "other": str,
+    }, request.json):
+        return invalid_fields()
+    
+    token = request.json["token"]
+    if not is_valid_token(token):
+        return forbidden()
+
+    id_ = get_user_id(token)
+
+    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    exists = cursor.fetchone() is not None 
+    
+    if not exists: return invalid_fields()
+
+    update_query = f"""
+        UPDATE "{config.META_NAME}"."UserInfo"
+        SET following_ids = array_append(following_ids, %s)
+        WHERE user_id = %s AND NOT (%s = ANY(following_ids));
+    """
+    try:
+        cursor.execute(update_query, (request.json["other"], id_, request.json["other"]))
+    except Exception as e:
+        return error(e)
+
+
+    update_query = f"""
+        UPDATE "{config.META_NAME}"."UserInfo"
+        SET follower_ids = array_append(follower_ids, %s)
+        WHERE user_id = %s AND NOT (%s = ANY(follower_ids));
+    """
+    try:
+        cursor.execute(update_query, (id_, request.json["other"], id_))
+    except Exception as e:
+        return error(e)
+
+    return success()
+
+@app.route("/api/users/unfollow")
+def unfollow():
+    if not verify({
+        "token": str,
+        "other": str,
+    }, request.json):
+        return invalid_fields()
+    
+    token = request.json["token"]
+    if not is_valid_token(token):
+        return forbidden()
+
+    id_ = get_user_id(token)
+
+    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    exists = cursor.fetchone() is not None 
+
+    if not exists:
+        return invalid_fields()
+
+    update_query = f"""
+        UPDATE "{config.META_NAME}"."UserInfo"
+        SET following_ids = array_remove(following_ids, %s)
+        WHERE user_id = %s;
+    """
+    try:
+        cursor.execute(update_query, (request.json["other"], id_))
+    except Exception as e:
+        return error(e)
+
+    update_query = f"""
+        UPDATE "{config.META_NAME}"."UserInfo"
+        SET follower_ids = array_remove(follower_ids, %s)
+        WHERE user_id = %s;
+    """
+    try:
+        cursor.execute(update_query, (id_, request.json["other"]))
+    except Exception as e:
+        return error(e)
+
+    return success()
+
+@app.route("/api/users/upload_pfp")
+def upload_pfp():
+    if not verify({
+        "token": str,
+        "image": str, # base64
+    }, request.json):
+        return invalid_fields()
+
+
+    token = request.json["token"]
+    if not is_valid_token(token):
+        return forbidden()
+
+    id_ = get_user_id(token)
+
+    image_url = "https://cdn.discordapp.com/attachments/1279192010892251207/1345298820719837277/NationalGeographic_2572187_4x3.png?ex=67c40aa9&is=67c2b929&hm=9c3a4061ae809987fa9047ac09b33b702b2aa7e57e7ffc67bbca914e3a054746&"  
+    # TODO: connect to S3!
+
+
+    update_query = f"""
+    UPDATE "{config.META_NAME}"."UserInfo"
+    SET profile_pic_url = %s
+    where id = %s;
+    """
+
+    try:
+        cursor.execute(update_query, (image_url,))
+    except Exception as e:
+        return error(e)
+
+    return success()
+
+
+
+@app.route("/api/users/followers")
+def followers():
+    if not verify({
+        "token": str
+    }, request.json):
+        return invalid_fields()
+    
+    token = request.json["token"]
+    if not is_valid_token(token):
+        return forbidden()
+
+    id_ = get_user_id(token)
+    query = f"""
+        SELECT follower_ids
+        FROM "{config.META_NAME}"."UserInfo"
+        WHERE user_id = %s;
+    """
+    
+    try:
+        cursor.execute(query, (user_id,))
+        result = cursor.fetchone()
+        data = result[0] if result else []
+        return success({"followers": data})
+    except Exception as e:
+        return error(e)
+
+@app.route("/api/users/following")
+def following():
+    if not verify({
+        "token": str
+    }, request.json):
+        return invalid_fields()
+    
+    token = request.json["token"]
+    if not is_valid_token(token):
+        return forbidden()
+
+    id_ = get_user_id(token)
+    query = f"""
+        SELECT following_ids
+        FROM "{config.META_NAME}"."UserInfo"
+        WHERE user_id = %s;
+    """
+    
+    try:
+        cursor.execute(query, (user_id,))
+        result = cursor.fetchone()
+        data = result[0] if result else []
+        return success({"following": data})
+    except Exception as e:
+        return error(e)
+
+
+@app.route("/api/users/get")
+def getuser():
+    if not verify({
+        "token": str,
+        "other": str,
+    }, request.json):
+        return invalid_fields()
+    
+    token = request.json["token"]
+    if not is_valid_token(token):
+        return forbidden()
+
+    id_ = get_user_id(token)
+
+    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    exists = cursor.fetchone() is not None 
+
+    if not exists:
+        return invalid_fields()
+
+
+    try:
+        cursor.execute(f"""
+        select user_id, username, bio_text, profile_pic_url from "{config.META_NAME}"."UserInfo" WHERE id = %s 
+        """, request.json["other"])
+        result = cursor.fetchone()
+
+        user_id, username, bio, pfp = result
+
+        return success({
+            "data": {
+                "user_id": user_id,
+                "username": username,
+                "bio_text": bio,
+                "profile_pic_url": pfp 
+            }
+        })
+    except Exception as e:
+        return error(e)
+
