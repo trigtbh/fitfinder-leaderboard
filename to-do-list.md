@@ -2,11 +2,11 @@
 
 ~~register~~
 
-like_post
+~~like_post~~
 
-comment_post
+~~comment_post~~
 
-post_picture
+~~post_picture~~ (need to connect to s3)
 
 upload_profile_pic
 

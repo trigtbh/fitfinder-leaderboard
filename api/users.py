@@ -34,9 +34,9 @@ def register():
 
     resp = requests.post(URI + "/api/users/check_username", json={"username": username})
     if resp.status_code != 200:
-        return return_error("Failed to check username availability")
+        return error("Failed to check username availability")
     if not resp.json()["available"]:
-        return return_error(f"Username is already taken")
+        return error(f"Username is already taken")
 
 
 
@@ -48,9 +48,9 @@ def register():
     '''
     try:
         cur.execute(send_query, (user_id, username, password, full_name, email, phone))
-        return return_success()
+        return success()
     except Exception as e:
-        return return_error(e)
+        return error(e)
 
 
 
@@ -70,4 +70,4 @@ def username_available():
         data = {"available": len(records) == 0}
         return Response(dumps(data), status=200, mimetype="application/json")
     except Exception as e:
-        return return_error(e)
+        return error(e)

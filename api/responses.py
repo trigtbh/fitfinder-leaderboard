@@ -9,7 +9,7 @@ def invalid_fields():
         json.dumps({"type": "incorrect", "message": "Invalid fields"}),
         status=400)
 
-def return_error(e):
+def error(e):
     print("Request error: " + str(e))
     return Response(
         json.dumps({"type": "error", "message": str(e)}),
