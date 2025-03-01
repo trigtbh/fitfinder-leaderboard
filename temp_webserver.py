@@ -1,6 +1,6 @@
 import flask
 
-from listform import Leaderboard, User
+from dbform import Leaderboard, User
 
 lb = Leaderboard()
 
@@ -27,7 +27,7 @@ from flask import request
 # if not lb or (len(sys.argv) > 1 and sys.argv[1] == "reset"):
 #     print("resetting leaderboard")
 #     lb = Leaderboard()
-#     set_shared_object(lb)
+#     
 
 # del lb
 
@@ -38,7 +38,7 @@ from flask import request
 def register_bypass():
     data = request.json
     lb.insert(data["uuid"])
-    set_shared_object(lb)
+    
     return "OK"
 
 @app.route("/update", methods=["POST"])
@@ -46,7 +46,7 @@ def update():
     data = request.json
     
     lb.update(data["uuid"], data["score"])
-    set_shared_object(lb)
+    
     return "OK"
 
 @app.route("/score", methods=["POST"])
@@ -72,7 +72,7 @@ def increment():
     
     score = lb.get(data["uuid"]) + data["increment"]
     lb.update(data["uuid"], score)
-    set_shared_object(lb)
+    
     return "OK"
 
 

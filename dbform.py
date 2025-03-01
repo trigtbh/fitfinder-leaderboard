@@ -1,6 +1,7 @@
 import bisect
 import uuid
 import random
+import psycopg2
 
 def countingSort(arr, exp1):
 
@@ -68,7 +69,8 @@ class User:
         return self.score // other
 
 conn_uri = "host='localhost' dbname='viscord' user='viscord' password='viscord'"
-conn = psycopg2.connect(creation_uri)
+conn = psycopg2.connect(conn_uri)
+conn.autocommit = True
 # conn.set_session()
 cursor = conn.cursor()
 
@@ -132,14 +134,14 @@ class Leaderboard:
     def adjacent(self, user: str):
         query = """
             WITH Ranked AS (
-                SELECT id, score, RANK() OVER (ORDER BY score DESC) AS rank
-                FROM leaderboard
-            )
-            SELECT 
-                (SELECT id FROM Ranked WHERE rank = (SELECT rank FROM Ranked WHERE id = %s) - 1) AS previous_user,
-                (SELECT id FROM Ranked WHERE rank = (SELECT rank FROM Ranked WHERE id = %s) + 1) AS next_user
-            FROM Ranked
-            WHERE id = %s;
+            SELECT id, score, RANK() OVER (ORDER BY score DESC) AS rank
+            FROM leaderboard
+        )
+        SELECT 
+            (SELECT id FROM Ranked WHERE rank = (SELECT rank FROM Ranked WHERE id = %s) - 1 LIMIT 1) AS previous_user,
+            (SELECT id FROM Ranked WHERE rank = (SELECT rank FROM Ranked WHERE id = %s) + 1 LIMIT 1) AS next_user
+        FROM Ranked
+        WHERE id = %s;
         """
         cursor.execute(query, (user, user, user))
         result = cursor.fetchone()
