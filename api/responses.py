@@ -1,6 +1,5 @@
 import json
 from flask import Response
-from .login_flow import tokens
 import requests
 from .config import URI 
 
@@ -25,12 +24,6 @@ def missing_permissions():
         json.dumps({"type": "incorrect", "message": "You do not have permission to perform this action"}),
         status=403)
 
-def is_valid_token(token: str) -> bool:
-    return token in tokens
-
-def get_user_id(token: str) -> str:
-    name, _id = tokens[token]
-    return _id
 
 def forbidden():
     return Response(

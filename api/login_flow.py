@@ -7,6 +7,8 @@ from uuid import uuid4
 from flask import request, Response
 from .flask_app import app
 
+from . import config
+
 import json
 
 import hashlib
