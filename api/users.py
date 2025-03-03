@@ -11,11 +11,12 @@ from flask import request, Response
 import requests
 from .config import URI
 import hashlib
+from .responses import *
 
 @app.route("/api/users/register", methods=["POST"])
 def register():
    
-    if not validate_fields(request.json, {"username": str, 
+    if not verify(request.json, {"username": str, 
     "password": str, "full_name": str, "email": str, "phone_number": str}):
         return invalid_fields()
 
@@ -58,7 +59,7 @@ def register():
 @app.route("/api/users/check_username", methods=["POST"])
 def username_available():
     
-    if not validate_fields(request.json, {"username": str}):
+    if not verify(request.json, {"username": str}):
         return invalid_fields()
     
     username = request.json["username"]

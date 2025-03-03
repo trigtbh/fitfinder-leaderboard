@@ -1,5 +1,6 @@
 from .db import cur
 from cryptography.fernet import Fernet
+from .responses import *
 import os
 from uuid import uuid4
 
@@ -32,7 +33,7 @@ tokens = {}
 
 @app.route("/api/login", methods=["POST"])
 def handle_login():
-    if not validate_fields(request.json, {"username": str, "password": str, "sys_uuid": str}): 
+    if not verify(request.json, {"username": str, "password": str, "sys_uuid": str}): 
         return invalid_fields()
 
     user = request.json["username"]
@@ -61,7 +62,7 @@ def handle_login():
 
 @app.route("/api/login/bypass", methods=["POST"])
 def handle_token_bypass():
-    if not validate_fields(request.json, {"cache": str, "sys_uuid": str}):
+    if not verify(request.json, {"cache": str, "sys_uuid": str}):
         return invalid_fields()
     
     cache = request.json["cache"]
