@@ -2,6 +2,7 @@ import bisect
 import uuid
 import random
 import psycopg2
+from .db import cur
 
 def countingSort(arr, exp1):
 
@@ -68,32 +69,21 @@ class User:
     def __floordiv__(self, other):
         return self.score // other
 
-conn_uri = "host='localhost' dbname='viscord' user='viscord' password='viscord'"
-conn = psycopg2.connect(conn_uri)
-conn.autocommit = True
-# conn.set_session()
-cursor = conn.cursor()
 
-cursor.execute(f"""
-CREATE TABLE IF NOT EXISTS leaderboard (
-id TEXT PRIMARY KEY,
-score INTEGER
-)
-"""
-)
+
+
 
 
 
 class Leaderboard:
     def __init__(self, wipe=False):
-        if wipe:
-            cursor.execute(f"""
-                CREATE TABLE leaderboard (
-                id TEXT PRIMARY KEY,
-                score INTEGER
-                )
-                """
-            )
+        cur.execute(f"""
+        CREATE TABLE IF NOT EXISTS leaderboard (
+        id TEXT PRIMARY KEY,
+        score INTEGER
+        )
+        """
+        )
 
 
 
@@ -109,7 +99,7 @@ class Leaderboard:
 
 
     def insert(self, obj: str, ignore_exists=False):
-        cursor.execute('''INSERT INTO leaderboard (id, score) values (%s, 0)''', (obj,))
+        cur.execute('''INSERT INTO leaderboard (id, score) values (%s, 0)''', (obj,))
 
 
     def __str__(self):
@@ -118,8 +108,8 @@ class Leaderboard:
     
     def get(self, user: str):
         query = "SELECT score FROM leaderboard WHERE id = %s;"
-        cursor.execute(query, (user,))
-        result = cursor.fetchone()
+        cur.execute(query, (user,))
+        result = cur.fetchone()
         return result[0] if result else None
 
     def placement(self, user: str):
@@ -127,8 +117,8 @@ class Leaderboard:
         SELECT RANK() OVER (ORDER BY score DESC) AS rank
         FROM leaderboard
         WHERE id = %s;"""
-        cursor.execute(query, (user,))
-        result = cursor.fetchone()
+        cur.execute(query, (user,))
+        result = cur.fetchone()
         return result[0] if result else None
 
     def adjacent(self, user: str):
@@ -143,8 +133,8 @@ class Leaderboard:
         FROM Ranked
         WHERE id = %s;
         """
-        cursor.execute(query, (user, user, user))
-        result = cursor.fetchone()
+        cur.execute(query, (user, user, user))
+        result = cur.fetchone()
         return result[0], result[1]
 
 
@@ -154,12 +144,12 @@ class Leaderboard:
 
     def top_ten(self):
         query = "SELECT id FROM leaderboard ORDER BY score DESC LIMIT 10;"
-        cursor.execute(query)
-        return [row[0] for row in cursor.fetchall()]
+        cur.execute(query)
+        return [row[0] for row in cur.fetchall()]
 
     def update(self, user: str, new_score: int):
         query = "UPDATE leaderboard SET score = %s WHERE id = %s;"
-        cursor.execute(query, (new_score, user))
+        cur.execute(query, (new_score, user))
         
 
 if __name__ == "__main__":

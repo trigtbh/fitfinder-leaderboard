@@ -12,6 +12,7 @@ import requests
 from .config import URI
 import hashlib
 from .responses import *
+from . import config
 
 
 @app.route("/api/tags/add")
@@ -36,8 +37,8 @@ def add_tag():
     """
     
     try:
-        cursor.execute(query, (user_id,))
-        result = cursor.fetchone()
+        cur.execute(query, (id_,))
+        result = cur.fetchone()
         data = result[0] if result else []
     except Exception as e:
         return error(e)
@@ -52,7 +53,7 @@ def add_tag():
         WHERE user_id = %s AND NOT (%s = ANY(profile_tag_ids));
     """
     try:
-        cursor.execute(update_query, (id_, request.json["tag_id"], id_))
+        cur.execute(update_query, (id_, request.json["tag_id"], id_))
     except Exception as e:
         return error(e)
 
@@ -81,8 +82,8 @@ def remove_tag():
     """
     
     try:
-        cursor.execute(query, (user_id,))
-        result = cursor.fetchone()
+        cur.execute(query, (id_,))
+        result = cur.fetchone()
         data = result[0] if result else []
     except Exception as e:
         return error(e)
@@ -97,7 +98,7 @@ def remove_tag():
         WHERE user_id = %s;
     """
     try:
-        cursor.execute(update_query, (id_, request.json["tag_id"]))
+        cur.execute(update_query, (id_, request.json["tag_id"]))
     except Exception as e:
         return error(e)
 
@@ -127,8 +128,8 @@ def get_tags():
     """
     
     try:
-        cursor.execute(query, (user_id,))
-        result = cursor.fetchone()
+        cur.execute(query, (id_,))
+        result = cur.fetchone()
         data = result[0] if result else []
         return success({"followers": data})
     except Exception as e:

@@ -12,6 +12,17 @@ import requests
 from .config import URI
 import hashlib
 from .responses import *
+from . import config
+
+from .fastcrypt import encrypt
+
+global extra_key
+extra_key = ""
+
+def register_key(key):
+    global extra_key
+    extra_key = key
+
 
 @app.route("/api/users/register", methods=["POST"])
 def register():
@@ -29,7 +40,7 @@ def register():
     user_id = uuid4()
     
     password = hashlib.sha256(request.json["password"].encode()).hexdigest()
-    
+    password = encrypt(password, extra_key)
 
 
 
@@ -89,8 +100,8 @@ def follow():
 
     id_ = get_user_id(token)
 
-    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
-    exists = cursor.fetchone() is not None 
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    exists = cur.fetchone() is not None 
     
     if not exists: return invalid_fields()
 
@@ -100,7 +111,7 @@ def follow():
         WHERE user_id = %s AND NOT (%s = ANY(following_ids));
     """
     try:
-        cursor.execute(update_query, (request.json["other"], id_, request.json["other"]))
+        cur.execute(update_query, (request.json["other"], id_, request.json["other"]))
     except Exception as e:
         return error(e)
 
@@ -111,7 +122,7 @@ def follow():
         WHERE user_id = %s AND NOT (%s = ANY(follower_ids));
     """
     try:
-        cursor.execute(update_query, (id_, request.json["other"], id_))
+        cur.execute(update_query, (id_, request.json["other"], id_))
     except Exception as e:
         return error(e)
 
@@ -131,8 +142,8 @@ def unfollow():
 
     id_ = get_user_id(token)
 
-    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
-    exists = cursor.fetchone() is not None 
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    exists = cur.fetchone() is not None 
 
     if not exists:
         return invalid_fields()
@@ -143,7 +154,7 @@ def unfollow():
         WHERE user_id = %s;
     """
     try:
-        cursor.execute(update_query, (request.json["other"], id_))
+        cur.execute(update_query, (request.json["other"], id_))
     except Exception as e:
         return error(e)
 
@@ -153,7 +164,7 @@ def unfollow():
         WHERE user_id = %s;
     """
     try:
-        cursor.execute(update_query, (id_, request.json["other"]))
+        cur.execute(update_query, (id_, request.json["other"]))
     except Exception as e:
         return error(e)
 
@@ -185,7 +196,7 @@ def upload_pfp():
     """
 
     try:
-        cursor.execute(update_query, (image_url,))
+        cur.execute(update_query, (image_url,))
     except Exception as e:
         return error(e)
 
@@ -212,8 +223,8 @@ def followers():
     """
     
     try:
-        cursor.execute(query, (user_id,))
-        result = cursor.fetchone()
+        cur.execute(query, (id_,))
+        result = cur.fetchone()
         data = result[0] if result else []
         return success({"followers": data})
     except Exception as e:
@@ -238,8 +249,8 @@ def following():
     """
     
     try:
-        cursor.execute(query, (user_id,))
-        result = cursor.fetchone()
+        cur.execute(query, (id_,))
+        result = cur.fetchone()
         data = result[0] if result else []
         return success({"following": data})
     except Exception as e:
@@ -260,18 +271,18 @@ def getuser():
 
     id_ = get_user_id(token)
 
-    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
-    exists = cursor.fetchone() is not None 
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    exists = cur.fetchone() is not None 
 
     if not exists:
         return invalid_fields()
 
 
     try:
-        cursor.execute(f"""
+        cur.execute(f"""
         select user_id, username, bio_text, profile_pic_url from "{config.META_NAME}"."UserInfo" WHERE id = %s 
         """, request.json["other"])
-        result = cursor.fetchone()
+        result = cur.fetchone()
 
         user_id, username, bio, pfp = result
 

@@ -12,6 +12,7 @@ import requests
 from .config import URI
 import hashlib
 from .responses import *
+from . import config
 
 @app.route("/api/posts/upload")
 def upload():
@@ -38,7 +39,7 @@ def upload():
     (post_id, user_id, image_url, post_caption, time_created)
     values (%s, %s, %s, %s, %s)"""
     try:
-        cur.execute(send_query, (post_id, id_, image_url, request.json["caption"], datetime.datetime.now()))
+        cur.execute(query, (post_id, id_, image_url, request.json["caption"], datetime.datetime.now()))
         return success()
     except Exception as e:
         return error(e)
@@ -58,14 +59,14 @@ def like():
 
     id_ = get_user_id(token)
 
-    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
-    exists = cursor.fetchone() is not None 
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
+    exists = cur.fetchone() is not None 
     
     if not exists: return invalid_fields()
 
 
-    cursor.execute(f"""SELECT user_id FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
-    author_id = cursor.fetchone()[0]
+    cur.execute(f"""SELECT user_id FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
+    author_id = cur.fetchone()[0]
 
     requests.post(config.URI + "/api/leaderboard/increment", json={
         "id": author_id,
@@ -84,7 +85,7 @@ def like():
     """
 
     try:
-        cursor.execute(insert_query, (like_id, id_, datetime.datetime.now()))
+        cur.execute(insert_query, (like_id, id_, datetime.datetime.now()))
     except Exception as e:
         return error(e)
 
@@ -96,7 +97,7 @@ def like():
         WHERE post_id = %s AND NOT (%s = ANY(likes));
     """
     try:
-        cursor.execute(update_query, (like_id, request.json["post_id"], like_id))
+        cur.execute(update_query, (like_id, request.json["post_id"], like_id))
         return success()
     except Exception as e:
         return error(e)
@@ -116,23 +117,23 @@ def unlike():
 
     id_ = get_user_id(token)
 
-    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
-    exists = cursor.fetchone() is not None
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
+    exists = cur.fetchone() is not None
 
     if not exists:
         return invalid_fields()
 
     requests.post(config.URI + "/api/leaderboard/increment", json={
-        "id": author_id,
+        "id": id_,
         "increment": -1
     })
 
 
-    cursor.execute(f"""SELECT like_id FROM "{config.META_NAME}"."PostInfo" 
+    cur.execute(f"""SELECT like_id FROM "{config.META_NAME}"."PostInfo" 
     WHERE user_liked = %s AND like_id = ANY(
         SELECT unnest(likes) FROM "{config.META_NAME}"."PostInfo" WHERE id = %s)""", (id_, request.json["post_id"]))
     
-    like_record = cursor.fetchone()
+    like_record = cur.fetchone()
     if not like_record:
         return invalid_fields()
 
@@ -144,7 +145,7 @@ def unlike():
     """
 
     try:
-        cursor.execute(delete_query, (like_id,))
+        cur.execute(delete_query, (like_id,))
     except Exception as e:
         return error(e)
 
@@ -154,7 +155,7 @@ def unlike():
         WHERE post_id = %s;
     """
     try:
-        cursor.execute(update_query, (like_id, request.json["post_id"]))
+        cur.execute(update_query, (like_id, request.json["post_id"]))
         return success()
     except Exception as e:
         return error(e)
@@ -176,8 +177,8 @@ def comment():
 
     id_ = get_user_id(token)
 
-    cursor.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
-    exists = cursor.fetchone() is not None 
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
+    exists = cur.fetchone() is not None 
     
     if not exists: return invalid_fields()
 
@@ -190,7 +191,7 @@ def comment():
     """
 
     try:
-        cursor.execute(insert_query, (comment_id, requests.json["comment"], id_, datetime.datetime.now()))
+        cur.execute(insert_query, (comment_id, requests.json["comment"], id_, datetime.datetime.now()))
     except Exception as e:
         return error(e)
 
@@ -201,7 +202,7 @@ def comment():
         WHERE post_id = %s;
     """
     try:
-        cursor.execute(update_query, (comment_id, request.json["post_id"]))
+        cur.execute(update_query, (comment_id, request.json["post_id"]))
         return success()
     except Exception as e:
         return error(e)
@@ -232,8 +233,8 @@ def nextpost():
     """
     
     try:
-        cursor.execute(query, (user_id,))
-        result = cursor.fetchone()
+        cur.execute(query, (id_,))
+        result = cur.fetchone()
         data = result[0] if result else []
     except Exception as e:
         return error(e)

@@ -32,6 +32,15 @@ class Singleton(type):
 
 tokens = {}
 
+from .fastcrypt import encrypt
+
+global extra_key
+extra_key = ""
+
+def register_key(key):
+    global extra_key
+    extra_key = key
+
 
 @app.route("/api/login", methods=["POST"])
 def handle_login():
@@ -41,6 +50,8 @@ def handle_login():
     user = request.json["username"]
 
     password = hashlib.sha256(request.json["password"].encode()).hexdigest()
+    password = encrypt(password, extra_key)
+    
     sys_uuid = request.json["sys_uuid"]
 
     send_query = f"""select user_id, username from {config.META_NAME}."UserInfo" where username = %s and user_password = %s"""

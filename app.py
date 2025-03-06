@@ -1,5 +1,13 @@
 from api import config, db, leaderboard, login_flow, posts, responses, tags, users
 
+from validate import get_key
+
+key = get_key()
+
+users.register_key(key)
+login_flow.register_key(key)
+
+
 from api.flask_app import app
 
 @app.route("/")

@@ -1,13 +1,13 @@
 
 import psycopg2
-
+import dotenv
+dotenv.load_dotenv()
 
 
 import os
 base = os.path.dirname(os.path.realpath(__file__))
 
-conn_uri = "host='localhost' dbname='viscord' user='viscord' password='viscord'"
-
+conn_uri = os.getenv("DATABASE_URL")
 creation_uri = conn_uri
 conn = psycopg2.connect(creation_uri)
 conn.set_session(autocommit=True)
