@@ -4,6 +4,8 @@ import random
 import psycopg2
 from .db import cur
 
+from config import META_NAME
+
 def countingSort(arr, exp1):
 
     n = len(arr)
@@ -39,10 +41,6 @@ def radixSort(arr):
         countingSort(arr, exp)
         exp *= 10
 
-conn_uri = "host='localhost' dbname='fflb' user='viscord' password='viscord'"
-
-
-
 
 class User:
     def __init__(self, uuid, score):
@@ -77,14 +75,7 @@ class User:
 
 class Leaderboard:
     def __init__(self, wipe=False):
-        cur.execute(f"""
-        CREATE TABLE IF NOT EXISTS leaderboard (
-        id TEXT PRIMARY KEY,
-        score INTEGER
-        )
-        """
-        )
-
+        ...
 
 
     def initialize(self, users):
@@ -99,7 +90,7 @@ class Leaderboard:
 
 
     def insert(self, obj: str, ignore_exists=False):
-        cur.execute('''INSERT INTO leaderboard (id, score) values (%s, 0)''', (obj,))
+        cur.execute(f'''INSERT INTO {META_NAME}."leaderboard" (id, score) values (%s, 0)''', (obj,))
 
 
     def __str__(self):
@@ -107,7 +98,7 @@ class Leaderboard:
         return '\n'.join([f'{user.uuid} {user.score}' for user in self.board[::-1]])
     
     def get(self, user: str):
-        query = "SELECT score FROM leaderboard WHERE id = %s;"
+        query = f"SELECT score FROM \"{META_NAME}\".\"leaderboard\" WHERE id = %s;"
         cur.execute(query, (user,))
         result = cur.fetchone()
         return result[0] if result else None
@@ -115,17 +106,17 @@ class Leaderboard:
     def placement(self, user: str):
         query = f"""
         SELECT RANK() OVER (ORDER BY score DESC) AS rank
-        FROM leaderboard
+        FROM "{META_NAME}"."leaderboard"
         WHERE id = %s;"""
         cur.execute(query, (user,))
         result = cur.fetchone()
         return result[0] if result else None
 
     def adjacent(self, user: str):
-        query = """
+        query = f"""
             WITH Ranked AS (
             SELECT id, score, RANK() OVER (ORDER BY score DESC) AS rank
-            FROM leaderboard
+            FROM "{META_NAME}"."leaderboard"
         )
         SELECT 
             (SELECT id FROM Ranked WHERE rank = (SELECT rank FROM Ranked WHERE id = %s) - 1 LIMIT 1) AS previous_user,
@@ -143,12 +134,12 @@ class Leaderboard:
 
 
     def top_ten(self):
-        query = "SELECT id FROM leaderboard ORDER BY score DESC LIMIT 10;"
+        query = f"SELECT id FROM \"{META_NAME}\".\"leaderboard\" ORDER BY score DESC LIMIT 10;"
         cur.execute(query)
         return [row[0] for row in cur.fetchall()]
 
     def update(self, user: str, new_score: int):
-        query = "UPDATE leaderboard SET score = %s WHERE id = %s;"
+        query = f"UPDATE \"{META_NAME}\".\"leaderboard\" SET score = %s WHERE id = %s;"
         cur.execute(query, (new_score, user))
         
 
