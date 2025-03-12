@@ -54,7 +54,7 @@ def handle_login():
     
     sys_uuid = request.json["sys_uuid"]
 
-    send_query = f"""select user_id, username from "{config.META_NAME}"."UserInfo" where username = %s and user_password = %s"""
+    send_query = f"""select user_id, username from "{config.META_NAME}"."userinfo" where username = %s and user_password = %s"""
     try:
         cur.execute(send_query, (user, password))
         records = cur.fetchall()
@@ -86,7 +86,7 @@ def handle_token_bypass():
         token = f.decrypt(cache.encode("utf-8")).decode("utf-8")
 
         name, _id = tokens[token]
-        query = f"""select user_id, username from "{config.META_NAME}"."UserInfo" where username = %s"""
+        query = f"""select user_id, username from "{config.META_NAME}"."userinfo" where username = %s"""
         cur.execute(query, (name,))
         records = cur.fetchall()
         if len(records) == 0:
