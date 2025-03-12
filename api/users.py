@@ -54,7 +54,7 @@ def register():
 
 
     send_query=f'''
-    insert into "{config.META_NAME}"."UserInfo" 
+    insert into "{config.META_NAME}"."userinfo" 
     (user_id, username, password_hash, full_name, email, phone_number) 
     values (%s, %s, %s, %s, %s, %s)
     '''
@@ -75,7 +75,7 @@ def username_available():
     
     username = request.json["username"]
 
-    send_query = f"""select 1 from "{config.META_NAME}"."UserInfo" where username = %s"""
+    send_query = f"""select 1 from "{config.META_NAME}"."userinfo" where username = %s"""
     try:
         cur.execute(send_query, (username,)) # weird tuple hack
         records = cur.fetchall()
@@ -100,13 +100,13 @@ def follow():
 
     id_ = get_user_id(token)
 
-    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."userinfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
     exists = cur.fetchone() is not None 
     
     if not exists: return invalid_fields()
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."UserInfo"
+        UPDATE "{config.META_NAME}"."userinfo"
         SET following_ids = array_append(following_ids, %s)
         WHERE user_id = %s AND NOT (%s = ANY(following_ids));
     """
@@ -117,7 +117,7 @@ def follow():
 
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."UserInfo"
+        UPDATE "{config.META_NAME}"."userinfo"
         SET follower_ids = array_append(follower_ids, %s)
         WHERE user_id = %s AND NOT (%s = ANY(follower_ids));
     """
@@ -142,14 +142,14 @@ def unfollow():
 
     id_ = get_user_id(token)
 
-    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."userinfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
     exists = cur.fetchone() is not None 
 
     if not exists:
         return invalid_fields()
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."UserInfo"
+        UPDATE "{config.META_NAME}"."userinfo"
         SET following_ids = array_remove(following_ids, %s)
         WHERE user_id = %s;
     """
@@ -159,7 +159,7 @@ def unfollow():
         return error(e)
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."UserInfo"
+        UPDATE "{config.META_NAME}"."userinfo"
         SET follower_ids = array_remove(follower_ids, %s)
         WHERE user_id = %s;
     """
@@ -190,7 +190,7 @@ def upload_pfp():
 
 
     update_query = f"""
-    UPDATE "{config.META_NAME}"."UserInfo"
+    UPDATE "{config.META_NAME}"."userinfo"
     SET profile_pic_url = %s
     where id = %s;
     """
@@ -218,7 +218,7 @@ def followers():
     id_ = get_user_id(token)
     query = f"""
         SELECT follower_ids
-        FROM "{config.META_NAME}"."UserInfo"
+        FROM "{config.META_NAME}"."userinfo"
         WHERE user_id = %s;
     """
     
@@ -244,7 +244,7 @@ def following():
     id_ = get_user_id(token)
     query = f"""
         SELECT following_ids
-        FROM "{config.META_NAME}"."UserInfo"
+        FROM "{config.META_NAME}"."userinfo"
         WHERE user_id = %s;
     """
     
@@ -271,7 +271,7 @@ def getuser():
 
     id_ = get_user_id(token)
 
-    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."UserInfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."userinfo" WHERE id = %s LIMIT 1""", (request.json["other"],))
     exists = cur.fetchone() is not None 
 
     if not exists:
@@ -280,7 +280,7 @@ def getuser():
 
     try:
         cur.execute(f"""
-        select user_id, username, bio_text, profile_pic_url from "{config.META_NAME}"."UserInfo" WHERE id = %s 
+        select user_id, username, bio_text, profile_pic_url from "{config.META_NAME}"."userinfo" WHERE id = %s 
         """, request.json["other"])
         result = cur.fetchone()
 
