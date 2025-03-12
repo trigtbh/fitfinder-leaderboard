@@ -19,7 +19,7 @@ lb = Leaderboard()
 
 from flask import request
 
-@app.route("/api/leaderboard/update", methods=["POST"])
+@app.route("/leaderboard/update", methods=["POST"])
 def update():
     if request.remote_addr != "127.0.0.1": return forbidden()
     data = request.json
@@ -28,24 +28,24 @@ def update():
     
     return "OK"
 
-@app.route("/api/leaderboard/score")
+@app.route("/leaderboard/score")
 def score():
     data = request.json
     
     return str(lb.get(data["id"]))
 
-@app.route("/api/leaderboard/adjacent", methods=["POST"])
+@app.route("/leaderboard/adjacent", methods=["POST"])
 def adjacent():
     data = request.json
     
     return str(lb.adjacent(data["id"]))
 
-@app.route("/api/leaderboard/top_ten")
+@app.route("/leaderboard/top_ten")
 def top_ten():
     
     return str(lb.top_ten())
 
-@app.route("/api/leaderboard/increment", methods=["POST"])
+@app.route("/leaderboard/increment", methods=["POST"])
 def increment():
     if request.remote_addr != "127.0.0.1": return forbidden()
     data = request.json
@@ -56,7 +56,7 @@ def increment():
     return "OK"
 
 
-@app.route("/api/leaderboard/placement")
+@app.route("/leaderboard/placement")
 def placement():
     data = request.json
     

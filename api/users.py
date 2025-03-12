@@ -24,7 +24,7 @@ def register_key(key):
     extra_key = key
 
 
-@app.route("/api/users/register", methods=["POST"])
+@app.route("/users/register", methods=["POST"])
 def register():
    
     if not verify(request.json, {"username": str, 
@@ -44,7 +44,7 @@ def register():
 
 
 
-    resp = requests.post(URI + "/api/users/check_username", json={"username": username})
+    resp = requests.post(URI + "/users/check_username", json={"username": username})
     if resp.status_code != 200:
         return error("Failed to check username availability")
     if not resp.json()["available"]:
@@ -67,7 +67,7 @@ def register():
 
 
 
-@app.route("/api/users/check_username", methods=["POST"])
+@app.route("/users/check_username", methods=["POST"])
 def username_available():
     
     if not verify(request.json, {"username": str}):
@@ -86,7 +86,7 @@ def username_available():
 
 
 
-@app.route("/api/users/follow")
+@app.route("/users/follow")
 def follow():
     if not verify({
         "token": str,
@@ -128,7 +128,7 @@ def follow():
 
     return success()
 
-@app.route("/api/users/unfollow")
+@app.route("/users/unfollow")
 def unfollow():
     if not verify({
         "token": str,
@@ -170,7 +170,7 @@ def unfollow():
 
     return success()
 
-@app.route("/api/users/upload_pfp")
+@app.route("/users/upload_pfp")
 def upload_pfp():
     if not verify({
         "token": str,
@@ -204,7 +204,7 @@ def upload_pfp():
 
 
 
-@app.route("/api/users/followers")
+@app.route("/users/followers")
 def followers():
     if not verify({
         "token": str
@@ -230,7 +230,7 @@ def followers():
     except Exception as e:
         return error(e)
 
-@app.route("/api/users/following")
+@app.route("/users/following")
 def following():
     if not verify({
         "token": str
@@ -257,7 +257,7 @@ def following():
         return error(e)
 
 
-@app.route("/api/users/get")
+@app.route("/users/get")
 def getuser():
     if not verify({
         "token": str,

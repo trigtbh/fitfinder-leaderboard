@@ -15,7 +15,7 @@ from .responses import *
 from . import config
 
 
-@app.route("/api/tags/add")
+@app.route("/tags/add")
 def add_tag():
     if not verify({
         "token": str,
@@ -60,7 +60,7 @@ def add_tag():
     return success()
 
     
-@app.route("/api/tags/remove")
+@app.route("/tags/remove")
 def remove_tag():
     if not verify({
         "token": str,
@@ -109,7 +109,7 @@ def remove_tag():
     
 
 
-@app.route("/api/tags/get")
+@app.route("/tags/get")
 def get_tags():
     if not verify({
         "token": str

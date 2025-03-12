@@ -14,7 +14,7 @@ import hashlib
 from .responses import *
 from . import config
 
-@app.route("/api/posts/upload")
+@app.route("/posts/upload")
 def upload():
     if not verify({
         "token": str,
@@ -45,7 +45,7 @@ def upload():
         return error(e)
 
 
-@app.route("/api/posts/like")
+@app.route("/posts/like")
 def like():
     if not verify({
         "token": str,
@@ -68,7 +68,7 @@ def like():
     cur.execute(f"""SELECT user_id FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
     author_id = cur.fetchone()[0]
 
-    requests.post(config.URI + "/api/leaderboard/increment", json={
+    requests.post(config.URI + "/leaderboard/increment", json={
         "id": author_id,
         "increment": 1
     })
@@ -103,7 +103,7 @@ def like():
         return error(e)
 
 
-@app.route("/api/posts/unlike")
+@app.route("/posts/unlike")
 def unlike():
     if not verify({
         "token": str,
@@ -123,7 +123,7 @@ def unlike():
     if not exists:
         return invalid_fields()
 
-    requests.post(config.URI + "/api/leaderboard/increment", json={
+    requests.post(config.URI + "/leaderboard/increment", json={
         "id": id_,
         "increment": -1
     })
@@ -162,7 +162,7 @@ def unlike():
 
 
 
-@app.route("/api/posts/comment")
+@app.route("/posts/comment")
 def comment():
     if not verify({
         "token": str,
@@ -209,7 +209,7 @@ def comment():
 
 viewed = {}
 
-@app.route("/api/posts/next")
+@app.route("/posts/next")
 def nextpost():
     if not verify({
         "token": str

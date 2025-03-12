@@ -1,6 +1,6 @@
 # endpoints
 ### login flow
-- `/api/login`: logs in a user
+- `/login`: logs in a user
 - requires:
     - `user`: string - username
     - `password`: string - password hash

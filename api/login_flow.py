@@ -42,7 +42,7 @@ def register_key(key):
     extra_key = key
 
 
-@app.route("/api/login", methods=["POST"])
+@app.route("/login", methods=["POST"])
 def handle_login():
     if not verify(request.json, {"username": str, "password": str, "sys_uuid": str}): 
         return invalid_fields()
@@ -73,7 +73,7 @@ def handle_login():
         return Response(json.dumps({"type": "error", "message": str(e)}), status=500)
 
 
-@app.route("/api/login/bypass", methods=["POST"])
+@app.route("/login/bypass", methods=["POST"])
 def handle_token_bypass():
     if not verify(request.json, {"cache": str, "sys_uuid": str}):
         return invalid_fields()
