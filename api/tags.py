@@ -32,7 +32,7 @@ def add_tag():
 
     query = f"""
         SELECT all_tag_ids 
-        FROM "{config.META_NAME}"."UserInfo"
+        FROM "{config.META_NAME}"."userinfo"
         WHERE user_id = %s;
     """
     
@@ -48,7 +48,7 @@ def add_tag():
 
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."UserInfo"
+        UPDATE "{config.META_NAME}"."userinfo"
         SET profile_tag_ids = array_append(profile_tag_ids, %s)
         WHERE user_id = %s AND NOT (%s = ANY(profile_tag_ids));
     """
@@ -77,7 +77,7 @@ def remove_tag():
 
     query = f"""
         SELECT profile_tag_ids 
-        FROM "{config.META_NAME}"."UserInfo"
+        FROM "{config.META_NAME}"."userinfo"
         WHERE user_id = %s;
     """
     
@@ -93,7 +93,7 @@ def remove_tag():
 
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."UserInfo"
+        UPDATE "{config.META_NAME}"."userinfo"
         SET profile_tag_ids = array_remove(profile_tag_ids, %s)
         WHERE user_id = %s;
     """
@@ -123,7 +123,7 @@ def get_tags():
     id_ = get_user_id(token)
     query = f"""
         SELECT all_tag_ids
-        FROM "{config.META_NAME}"."UserInfo"
+        FROM "{config.META_NAME}"."userinfo"
         WHERE user_id = %s;
     """
     

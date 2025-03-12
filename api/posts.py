@@ -35,7 +35,7 @@ def upload():
     image_url = "https://cdn.discordapp.com/attachments/1279192010892251207/1345298820719837277/NationalGeographic_2572187_4x3.png?ex=67c40aa9&is=67c2b929&hm=9c3a4061ae809987fa9047ac09b33b702b2aa7e57e7ffc67bbca914e3a054746&" 
     # TODO: connect above image url with S3. maybe have someone else do this!
 
-    query = f"""insert into "{config.META_NAME}"."PostInfo"
+    query = f"""insert into "{config.META_NAME}"."postinfo"
     (post_id, user_id, image_url, post_caption, time_created)
     values (%s, %s, %s, %s, %s)"""
     try:
@@ -59,13 +59,13 @@ def like():
 
     id_ = get_user_id(token)
 
-    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."postinfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
     exists = cur.fetchone() is not None 
     
     if not exists: return invalid_fields()
 
 
-    cur.execute(f"""SELECT user_id FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
+    cur.execute(f"""SELECT user_id FROM "{config.META_NAME}"."postinfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
     author_id = cur.fetchone()[0]
 
     requests.post(config.URI + "/leaderboard/increment", json={
@@ -79,7 +79,7 @@ def like():
     like_id = uuid4()
 
     insert_query = f"""
-    insert into "{config.META_NAME}"."LikeInfo"
+    insert into "{config.META_NAME}"."like_info"
     (like_id, user_liked, like_timestamp) 
     values (%s, %s, %s)
     """
@@ -92,7 +92,7 @@ def like():
 
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."PostInfo"
+        UPDATE "{config.META_NAME}"."postinfo"
         SET likes = array_append(likes, %s)
         WHERE post_id = %s AND NOT (%s = ANY(likes));
     """
@@ -117,7 +117,7 @@ def unlike():
 
     id_ = get_user_id(token)
 
-    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."postinfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
     exists = cur.fetchone() is not None
 
     if not exists:
@@ -129,9 +129,9 @@ def unlike():
     })
 
 
-    cur.execute(f"""SELECT like_id FROM "{config.META_NAME}"."PostInfo" 
+    cur.execute(f"""SELECT like_id FROM "{config.META_NAME}"."postinfo" 
     WHERE user_liked = %s AND like_id = ANY(
-        SELECT unnest(likes) FROM "{config.META_NAME}"."PostInfo" WHERE id = %s)""", (id_, request.json["post_id"]))
+        SELECT unnest(likes) FROM "{config.META_NAME}"."postinfo" WHERE id = %s)""", (id_, request.json["post_id"]))
     
     like_record = cur.fetchone()
     if not like_record:
@@ -140,7 +140,7 @@ def unlike():
     like_id = like_record[0]
 
     delete_query = f"""
-    DELETE FROM "{config.META_NAME}"."LikeInfo"
+    DELETE FROM "{config.META_NAME}"."like_info"
     WHERE like_id = %s;
     """
 
@@ -150,7 +150,7 @@ def unlike():
         return error(e)
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."PostInfo"
+        UPDATE "{config.META_NAME}"."postinfo"
         SET likes = array_remove(likes, %s)
         WHERE post_id = %s;
     """
@@ -177,7 +177,7 @@ def comment():
 
     id_ = get_user_id(token)
 
-    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."PostInfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
+    cur.execute(f"""SELECT 1 FROM "{config.META_NAME}"."postinfo" WHERE id = %s LIMIT 1""", (request.json["post_id"],))
     exists = cur.fetchone() is not None 
     
     if not exists: return invalid_fields()
@@ -185,7 +185,7 @@ def comment():
     comment_id = uuid4()
 
     insert_query = f"""
-    insert into "{config.META_NAME}"."CommentInfo"
+    insert into "{config.META_NAME}"."comment_info"
     (comment_id, comment_text, user_commented, comment_timestamp) 
     values (%s, %s, %s, %s)
     """
@@ -197,7 +197,7 @@ def comment():
 
 
     update_query = f"""
-        UPDATE "{config.META_NAME}"."PostInfo"
+        UPDATE "{config.META_NAME}"."postinfo"
         SET likes = array_append(likes, %s)
         WHERE post_id = %s;
     """
@@ -229,7 +229,7 @@ def nextpost():
     id_ = get_user_id(token)
     query = f"""
         SELECT post_id
-        FROM "{config.META_NAME}"."PostInfo"
+        FROM "{config.META_NAME}"."postinfo"
     """
     
     try:
