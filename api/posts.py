@@ -30,7 +30,7 @@ def upload():
 
     id_ = get_user_id(token)
 
-    post_id = uuid4()
+    post_id = str(uuid4())
 
     image_url = "https://cdn.discordapp.com/attachments/1279192010892251207/1345298820719837277/NationalGeographic_2572187_4x3.png?ex=67c40aa9&is=67c2b929&hm=9c3a4061ae809987fa9047ac09b33b702b2aa7e57e7ffc67bbca914e3a054746&" 
     # TODO: connect above image url with S3. maybe have someone else do this!
@@ -76,7 +76,7 @@ def like():
 
 
 
-    like_id = uuid4()
+    like_id = str(uuid4())
 
     insert_query = f"""
     insert into "{config.META_NAME}"."like_info"
@@ -182,7 +182,7 @@ def comment():
     
     if not exists: return invalid_fields()
 
-    comment_id = uuid4()
+    comment_id = str(uuid4())
 
     insert_query = f"""
     insert into "{config.META_NAME}"."comment_info"

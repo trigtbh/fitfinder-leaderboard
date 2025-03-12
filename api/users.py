@@ -37,7 +37,7 @@ def register():
     email = request.json["email"]
     phone = request.json["phone_number"]
 
-    user_id = uuid4()
+    user_id = str(uuid4())
     
     password = hashlib.sha256(request.json["password"].encode()).hexdigest()
     password = encrypt(password, extra_key)
