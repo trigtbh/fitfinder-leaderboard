@@ -4,7 +4,7 @@ import random
 import psycopg2
 from .db import cur
 
-from config import META_NAME
+from .config import META_NAME
 
 def countingSort(arr, exp1):
 
