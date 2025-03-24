@@ -13,8 +13,16 @@ from .config import URI
 import hashlib
 from .responses import *
 from . import config
+import os
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 
-@app.route("/posts/upload")
+
+mongo_uri = os.getenv("MONGO_URI") # load_dotenv() has to be called before this!
+client = MongoClient(uri, server_api=ServerApi('1'))
+
+
+@app.route("/posts/upload", methods=["POST"])
 def upload():
     if not verify({
         "token": str,
@@ -32,8 +40,18 @@ def upload():
 
     post_id = str(uuid4())
 
-    image_url = "https://cdn.discordapp.com/attachments/1279192010892251207/1345298820719837277/NationalGeographic_2572187_4x3.png?ex=67c40aa9&is=67c2b929&hm=9c3a4061ae809987fa9047ac09b33b702b2aa7e57e7ffc67bbca914e3a054746&" 
+    #image_url = "https://cdn.discordapp.com/attachments/1279192010892251207/1345298820719837277/NationalGeographic_2572187_4x3.png?ex=67c40aa9&is=67c2b929&hm=9c3a4061ae809987fa9047ac09b33b702b2aa7e57e7ffc67bbca914e3a054746&" 
     # TODO: connect above image url with S3. maybe have someone else do this!
+
+    # TODO: connect with the /images/upload endpoint?!
+
+    resp = requests.post("/i/create", json={
+        "_id": id_,
+        "contents": request.json["image"]
+
+    })
+
+    image_url = config.PUBLIC_URI + "/i/" + id_
 
     query = f"""insert into "{config.META_NAME}"."postinfo"
     (post_id, user_id, image_url, post_caption, time_created)
@@ -45,7 +63,7 @@ def upload():
         return error(e)
 
 
-@app.route("/posts/like")
+@app.route("/posts/like", methods=["POST"])
 def like():
     if not verify({
         "token": str,
@@ -103,7 +121,7 @@ def like():
         return error(e)
 
 
-@app.route("/posts/unlike")
+@app.route("/posts/unlike", methods=["POST"])
 def unlike():
     if not verify({
         "token": str,
@@ -162,7 +180,7 @@ def unlike():
 
 
 
-@app.route("/posts/comment")
+@app.route("/posts/comment", methods=["POST"])
 def comment():
     if not verify({
         "token": str,

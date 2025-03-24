@@ -1,4 +1,7 @@
-from api import config, db, leaderboard, login_flow, posts, responses, tags, users
+from dotenv import load_dotenv
+load_dotenv()
+
+from api import config, db, leaderboard, login_flow, posts, responses, tags, users, images
 
 from validate import get_key
 

@@ -184,19 +184,18 @@ def upload_pfp():
         return forbidden()
 
     id_ = get_user_id(token)
-    img_id = str(uuid4())
 
     #image_url = "https://cdn.discordapp.com/attachments/1279192010892251207/1345298820719837277/NationalGeographic_2572187_4x3.png?ex=67c40aa9&is=67c2b929&hm=9c3a4061ae809987fa9047ac09b33b702b2aa7e57e7ffc67bbca914e3a054746&"  
     # TODO: connect to S3!
 
+    img_id = str(uuid4())
+
     resp = requests.post("/i/create", json={
         "_id": id_,
         "contents": request.json["image"]
-
     })
 
     image_url = config.PUBLIC_URI + "/i/" + id_
-
 
 
     update_query = f"""

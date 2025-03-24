@@ -15,7 +15,7 @@ from .responses import *
 from . import config
 
 
-@app.route("/tags/add")
+@app.route("/tags/add", methods=["POST"])
 def add_tag():
     if not verify({
         "token": str,
@@ -60,7 +60,7 @@ def add_tag():
     return success()
 
     
-@app.route("/tags/remove")
+@app.route("/tags/remove", methods=["POST"])
 def remove_tag():
     if not verify({
         "token": str,
