@@ -18,9 +18,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 import base64
 from io import BytesIO
-
-uri = os.getenv("MONGO_URI") # load_dotenv() has to be called before this!
-client = MongoClient(uri, server_api=ServerApi('1'))
+from .db import mongo_client as client
 
 db = client["Aura"]["images"]
 
@@ -32,12 +30,15 @@ def upload_image():
     db.insert_one(request.json)
     return "OK"
 
-@app.route("/i/<post:post>")
+@app.route("/i/<post>")
 def get_image(post: str):
     data = db.find_one({"_id": post})
     if not data: return Response(status=404)
 
     img = data["contents"]
     img_data = base64.b64decode(img)
-    img_stream = io.BytesIO(img_data)
+    img_stream = BytesIO(img_data)
     return send_file(img_stream, mimetype="image/png")
+
+from . import debug
+debug.loaded(__name__)

@@ -30,3 +30,5 @@ def decrypt(encoded, encryption_key):
     except:
         return None
     
+from . import debug
+debug.loaded(__name__)

@@ -29,3 +29,6 @@ def forbidden():
     return Response(
         json.dumps({"type": "incorrect", "message": "Invalid token"}),
         status=403)
+
+from . import debug
+debug.loaded(__name__)

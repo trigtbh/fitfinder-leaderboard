@@ -307,3 +307,6 @@ def getuser():
     except Exception as e:
         return error(e)
 
+
+from . import debug
+debug.loaded(__name__)

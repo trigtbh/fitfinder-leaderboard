@@ -13,14 +13,7 @@ from .config import URI
 import hashlib
 from .responses import *
 from . import config
-import os
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
-
-
-mongo_uri = os.getenv("MONGO_URI") # load_dotenv() has to be called before this!
-client = MongoClient(uri, server_api=ServerApi('1'))
-
+from .db import mongo_client
 
 @app.route("/posts/upload", methods=["POST"])
 def upload():
@@ -271,3 +264,5 @@ def nextpost():
     return success({"data": new})
 
 
+from . import debug
+debug.loaded(__name__)

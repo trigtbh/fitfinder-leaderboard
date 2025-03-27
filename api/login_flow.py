@@ -16,7 +16,8 @@ import hashlib
 key = os.getenv("FF_KEY")
 if not key:
     key = Fernet.generate_key()
-    os.system("export FF_KEY=" + key.decode())
+    #os.system("export FF_KEY=" + key.decode())
+    os.environ["FF_KEY"] = key.decode()
 else:
     key = key.encode()
 
@@ -99,3 +100,6 @@ def handle_token_bypass():
 
 
 from .helpers import *
+
+from . import debug
+debug.loaded(__name__)

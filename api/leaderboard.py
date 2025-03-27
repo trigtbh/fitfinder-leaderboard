@@ -67,3 +67,6 @@ def placement():
 
     data = request.json
     return str(lb.placement(data["id"]))
+
+from . import debug
+debug.loaded(__name__)

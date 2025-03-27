@@ -1,2 +1,9 @@
 flask
 psycopg2
+blessed
+dotenv
+cryptography
+requests
+pymongo
+gunicorn
+cloudpickle==3.1.1

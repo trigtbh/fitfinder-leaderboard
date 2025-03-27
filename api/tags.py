@@ -134,3 +134,6 @@ def get_tags():
         return success({"followers": data})
     except Exception as e:
         return error(e)
+
+from . import debug
+debug.loaded(__name__)
