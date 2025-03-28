@@ -27,7 +27,10 @@ def upload_image():
     if request.remote_addr != "127.0.0.1":
         return Response(status=404)
 
-    db.insert_one(request.json)
+    data = request.json
+    if "," in data["contents"]:
+        data["contents"] = data["contents"].split(",")[1]
+    db.insert_one(data)
     return "OK"
 
 @app.route("/i/<post>")
